@@ -29,7 +29,6 @@ db.init_app(app)
 app.config[
     'SQLALCHEMY_DATABASE_URI'] = 'postgresql://pranavs31899:v2_45K26_Dzp25fLpvn69SDw7fPnZiCk@db.bit.io:5432/pranavs31899/HelperX'
 SQLALCHEMY_TRACK_MODIFICATIONS = False
-db = SQLAlchemy(app)
 class users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String, unique=True, nullable=False)
