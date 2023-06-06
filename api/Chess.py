@@ -5,101 +5,87 @@ import requests  # used for testing
 import time
 from flask_restful import Resource
 
-chess_api = Blueprint('chess_api', __name__,
+chess_api = Blueprint('chess_api', __name__, 
                       url_prefix='/api/chess')
 api = Api(chess_api)
 
-
 class ChessAPI:
     @staticmethod
-    def get_chess():
-        with open('chess.json') as f:
-            chess_data = json.load(f)
-        return chess_data
+    def get_games():
+        with open('games.json') as f:
+            games_data = json.load(f)
+        return games_data
 
     @staticmethod
-    def write_chess(chess_data):
-        with open('chess.json', 'w') as f:
-            json.dump(chess_data, f, indent=4)
+    def write_games(games_data):
+        with open('games.json', 'w') as f:
+            json.dump(games_data, f, indent=4)
 
     class _Create(Resource):
         def post(self):
             body = request.get_json()
             name = body.get("name")
-            score = int(body.get("score"))  # Extract score and convert it to integer
+            score = int(body.get("score"))
 
             # Validate name
             if name is None or len(name) < 2:
-                return {'message': f'Name is missing or less than 2 characters'}, 210
+                return {'message': 'Name is missing or less than 2 characters'}, 210
 
             # Validate score
-            if score is None or score < 0:  # Assuming score cannot be negative
-                return {'message': f'Score is missing or not a valid value'}, 210
+            if score is None or score < 0:
+                return {'message': 'Score is missing or not a valid value'}, 210
 
-            chess_data = ChessAPI.get_chess()
+            games_data = ChessAPI.get_games()
 
-            # Check if the film with the given name already exists
-            existing_film = next((film for film in chess_data if film["name"] == name), None)
-            if existing_film:
-                return {'message': f'Film with name {name} already exists'}, 210
+            # Check if the game with the given name already exists
+            existing_game = next((game for game in games_data if game["name"] == name), None)
+            if existing_game:
+                return {'message': f'Game with name {name} already exists'}, 210
 
-            new_film = {"name": name, "score": score}
-            chess_data.append(new_film)
+            new_game = {"name": name, "score": score}
+            games_data.append(new_game)
 
-            ChessAPI.write_chess(chess_data)
+            ChessAPI.write_games(games_data)
 
-            return jsonify(new_film)
+            return jsonify(new_game)
 
     class _Read(Resource):
         def get(self):
-            chess_data = ChessAPI.get_chess()
-            return jsonify(chess_data)
+            games_data = ChessAPI.get_games()
+            return jsonify(games_data)
 
     class _Update(Resource):
         def put(self):
             body = request.get_json()
             name = body.get("name")
-            score = int(body.get("score"))  # Extract score and convert it to integer
+            new_score = int(body.get("score"))
 
-            # Validate name
-            if name is None or len(name) < 2:
-                return {'message': f'Name is missing or less than 2 characters'}, 210
+            games_data = ChessAPI.get_games()
 
-            # Validate score
-            if score is None or score < 0:  # Assuming score cannot be negative
-                return {'message': f'Score is missing or not a valid value'}, 210
-
-            chess_data = ChessAPI.get_chess()
-
-            # Find the film with the given name
-            film = next((film for film in chess_data if film["name"] == name), None)
-            if film:
-                film["score"] = score
-                ChessAPI.write_chess(chess_data)
-                return {'message': f'Successfully updated score for film: {name}'}
-
-            return {'message': f'Film with name {name} not found'}, 210
+            # Find the game with the given name
+            game = next((game for game in games_data if game["name"] == name), None)
+            if game:
+                game["score"] = new_score
+                ChessAPI.write_games(games_data)
+                return jsonify(game)
+            else:
+                return {'message': f'Game with name {name} not found'}, 210
 
     class _Delete(Resource):
         def delete(self, name):
-            if name == '-':
-                chess_data = []
-                ChessAPI.write_chess(chess_data)
-                return {'message': f'Successfully deleted all chess'}
+            games_data = ChessAPI.get_games()
+
+            # Find the game with the given name
+            game = next((game for game in games_data if game["name"] == name), None)
+            if game:
+                games_data.remove(game)
+                ChessAPI.write_games(games_data)
+                return {'message': f'Successfully deleted game with name {name}'}
             else:
-                chess_data = ChessAPI.get_chess()
+                return {'message': f'Game with name {name} not found'}, 210
 
-                # Find the film with the given name
-                film = next((film for film in chess_data if film["name"] == name), None)
-                if film:
-                    chess_data.remove(film)
-                    ChessAPI.write_chess(chess_data)
-                    return {'message': f'Successfully deleted film: {name}'}
-
-                return {'message': f'Film with name {name} not found'}, 210
-
-    # Building REST API endpoints
-    chess_api.add_resource(_Create, '/create')
-    chess_api.add_resource(_Read, '/')
-    chess_api.add_resource(_Update, '/update')
-    chess_api.add_resource(_Delete, '/delete/<string:name>')
+# Building REST API endpoints
+api.add_resource(ChessAPI._Create, '/create')
+api.add_resource(ChessAPI._Read, '/')
+api.add_resource(ChessAPI._Update, '/update')
+api.add_resource(ChessAPI._Delete, '/delete/<string:name>')
