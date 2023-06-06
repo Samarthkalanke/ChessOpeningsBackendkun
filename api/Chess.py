@@ -99,7 +99,7 @@ class ChessAPI:
                 return {'message': f'Film with name {name} not found'}, 210
 
     # Building REST API endpoints
-    film_api.add_resource(_Create, '/create')
-    film_api.add_resource(_Read, '/')
-    film_api.add_resource(_Update, '/update')
-    film_api.add_resource(_Delete, '/delete/<string:name>')
+    chess_api.add_resource(_Create, '/create')
+    chess_api.add_resource(_Read, '/')
+    chess_api.add_resource(_Update, '/update')
+    chess_api.add_resource(_Delete, '/delete/<string:name>')
