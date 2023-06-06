@@ -1,20 +1,26 @@
-from flask import Blueprint, request, jsonify
-import json
+from contextlib import nullcontext
+from flask import Blueprint, json, jsonify, request  # jsonify creates an endpoint response object
+from flask_restful import Api, Resource # used for REST API building
+import requests  # used for testing 
+import time
+from flask_restful import Resource
 
-film_api = Blueprint('film_api', __name__, url_prefix='/api/films')
+chess_api = Blueprint('chess_api', __name__,
+                      url_prefix='/api/chess')
+api = Api(chess_api)
 
 
-class FilmAPI:
+class ChessAPI:
     @staticmethod
-    def get_films():
-        with open('films.json') as f:
-            films_data = json.load(f)
-        return films_data
+    def get_chess():
+        with open('chess.json') as f:
+            chess_data = json.load(f)
+        return chess_data
 
     @staticmethod
-    def write_films(films_data):
-        with open('films.json', 'w') as f:
-            json.dump(films_data, f, indent=4)
+    def write_chess(chess_data):
+        with open('chess.json', 'w') as f:
+            json.dump(chess_data, f, indent=4)
 
     class _Create(Resource):
         def post(self):
@@ -30,24 +36,24 @@ class FilmAPI:
             if score is None or score < 0:  # Assuming score cannot be negative
                 return {'message': f'Score is missing or not a valid value'}, 210
 
-            films_data = FilmAPI.get_films()
+            chess_data = ChessAPI.get_chess()
 
             # Check if the film with the given name already exists
-            existing_film = next((film for film in films_data if film["name"] == name), None)
+            existing_film = next((film for film in chess_data if film["name"] == name), None)
             if existing_film:
                 return {'message': f'Film with name {name} already exists'}, 210
 
             new_film = {"name": name, "score": score}
-            films_data.append(new_film)
+            chess_data.append(new_film)
 
-            FilmAPI.write_films(films_data)
+            ChessAPI.write_chess(chess_data)
 
             return jsonify(new_film)
 
     class _Read(Resource):
         def get(self):
-            films_data = FilmAPI.get_films()
-            return jsonify(films_data)
+            chess_data = ChessAPI.get_chess()
+            return jsonify(chess_data)
 
     class _Update(Resource):
         def put(self):
@@ -63,13 +69,13 @@ class FilmAPI:
             if score is None or score < 0:  # Assuming score cannot be negative
                 return {'message': f'Score is missing or not a valid value'}, 210
 
-            films_data = FilmAPI.get_films()
+            chess_data = ChessAPI.get_chess()
 
             # Find the film with the given name
-            film = next((film for film in films_data if film["name"] == name), None)
+            film = next((film for film in chess_data if film["name"] == name), None)
             if film:
                 film["score"] = score
-                FilmAPI.write_films(films_data)
+                ChessAPI.write_chess(chess_data)
                 return {'message': f'Successfully updated score for film: {name}'}
 
             return {'message': f'Film with name {name} not found'}, 210
@@ -77,17 +83,17 @@ class FilmAPI:
     class _Delete(Resource):
         def delete(self, name):
             if name == '-':
-                films_data = []
-                FilmAPI.write_films(films_data)
-                return {'message': f'Successfully deleted all films'}
+                chess_data = []
+                ChessAPI.write_chess(chess_data)
+                return {'message': f'Successfully deleted all chess'}
             else:
-                films_data = FilmAPI.get_films()
+                chess_data = ChessAPI.get_chess()
 
                 # Find the film with the given name
-                film = next((film for film in films_data if film["name"] == name), None)
+                film = next((film for film in chess_data if film["name"] == name), None)
                 if film:
-                    films_data.remove(film)
-                    FilmAPI.write_films(films_data)
+                    chess_data.remove(film)
+                    ChessAPI.write_chess(chess_data)
                     return {'message': f'Successfully deleted film: {name}'}
 
                 return {'message': f'Film with name {name} not found'}, 210
