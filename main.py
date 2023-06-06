@@ -4,7 +4,7 @@ import threading
 from flask import render_template  # import render_template from "public" flask libraries
 
 # import "packages" from "this" project
-from __init__ import app  # Definitions initialization
+from __init__ import app,db  # Definitions initialization
 from model.jokes import initJokes
 from model.users import initUsers
 
@@ -16,6 +16,8 @@ from api.Chess import chess_api
 
 # setup App pages
 from projects.projects import app_projects # Blueprint directory import projects definition
+
+db.init_app(app)
 
 # register URIs
 app.register_blueprint(joke_api) # register api routes
